@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mention-input</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --ink: #e8e4df;
+        --ink-muted: #7a736b;
+        --ink-faint: #4a443d;
+        --surface: #1a1816;
+        --surface-raised: #221f1c;
+        --surface-overlay: #2a2622;
+        --border: #332f2a;
+        --border-focus: #c9a96e;
+        --accent: #c9a96e;
+        --accent-dim: rgba(201, 169, 110, 0.12);
+        --accent-glow: rgba(201, 169, 110, 0.06);
+        --green: #7ab87a;
+        --green-dim: rgba(122, 184, 122, 0.15);
+        --red: #d4736e;
+        --blue: #6e9ad4;
+        --mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: var(--mono);
+        font-size: 13px;
+        background: var(--surface);
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Noise texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* Subtle grid lines */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(201, 169, 110, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(201, 169, 110, 0.02) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Layout ── */
+
+      .shell {
+        position: relative;
+        z-index: 1;
+        width: 880px;
+        max-width: 94vw;
+        height: 92vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--surface);
+        box-shadow:
+          0 0 0 1px rgba(201, 169, 110, 0.04),
+          0 24px 80px rgba(0, 0, 0, 0.5);
+      }
+
+      /* ── Header ── */
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-raised);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-mark {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 12px var(--accent-dim);
+        animation: pulse 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          box-shadow: 0 0 12px var(--accent-dim);
+        }
+        50% {
+          opacity: 0.6;
+          box-shadow: 0 0 4px var(--accent-dim);
+        }
+      }
+
+      .header-title {
+        font-family: var(--serif);
+        font-size: 18px;
+        font-style: italic;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+
+      .header-badge {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--accent);
+        border: 1px solid var(--accent-dim);
+        padding: 2px 8px;
+        border-radius: 3px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .header-hint {
+        font-size: 11px;
+        color: var(--ink-faint);
+        letter-spacing: 0.02em;
+      }
+
+      .header-hint kbd {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--ink-muted);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 1px 5px;
+        margin: 0 2px;
+        background: var(--surface);
+        vertical-align: 1px;
+      }
+
+      /* ── Event log ── */
+
+      .log-panel {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .log-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .log-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .log-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .log-count {
+        font-size: 10px;
+        color: var(--ink-faint);
+        font-weight: 400;
+      }
+
+      .log-clear {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--ink-faint);
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 3px 10px;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        transition: all 0.15s;
+      }
+
+      .log-clear:hover {
+        color: var(--ink-muted);
+        border-color: var(--ink-faint);
+      }
+
+      .event-log {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+
+      .event-log::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .event-log::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .event-log::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      .log-entry {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0 12px;
+        padding: 5px 20px;
+        font-size: 12px;
+        line-height: 1.6;
+        animation: fadeSlideIn 0.2s ease-out;
+      }
+
+      @keyframes fadeSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .log-entry + .log-entry {
+        border-top: 1px solid rgba(51, 47, 42, 0.4);
+      }
+
+      .log-time {
+        color: var(--ink-faint);
+        font-size: 11px;
+        font-weight: 300;
+        white-space: nowrap;
+        padding-top: 1px;
+        min-width: 64px;
+      }
+
+      .log-body {
+        min-width: 0;
+      }
+
+      .log-event-tag {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 1px 6px;
+        border-radius: 2px;
+        margin-right: 8px;
+        vertical-align: 1px;
+      }
+
+      .log-event-tag.event-submit {
+        color: var(--green);
+        background: var(--green-dim);
+      }
+
+      .log-event-tag.event-mention {
+        color: var(--blue);
+        background: rgba(110, 154, 212, 0.12);
+      }
+
+      .log-event-tag.event-command {
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      .log-event-tag.event-value {
+        color: var(--ink-muted);
+        background: rgba(122, 115, 107, 0.12);
+      }
+
+      .log-detail {
+        color: var(--ink-muted);
+        word-break: break-all;
+      }
+
+      .log-detail .key {
+        color: var(--ink-faint);
+      }
+
+      .log-detail .str {
+        color: var(--green);
+      }
+
+      .log-detail .num {
+        color: var(--accent);
+      }
+
+      /* Empty state */
+      .log-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 8px;
+        color: var(--ink-faint);
+        font-size: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        line-height: 1.7;
+      }
+
+      .log-empty-icon {
+        font-size: 28px;
+        opacity: 0.3;
+        margin-bottom: 4px;
+        font-family: var(--serif);
+        font-style: italic;
+      }
+
+      /* ── Input bar ── */
+
+      .input-bar {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-raised);
+      }
+
+      mention-input {
+        width: 100%;
+        --mi-font-family: var(--mono);
+        --mi-font-size: 13px;
+        --mi-line-height: 1.65;
+        --mi-bg: var(--surface);
+        --mi-border: var(--border);
+        --mi-border-focus: var(--accent);
+        --mi-text: var(--ink);
+        --mi-text-muted: var(--ink-muted);
+        --mi-text-placeholder: var(--ink-faint);
+        --mi-caret-color: var(--accent);
+        --mi-highlight-bg: rgba(201, 169, 110, 0.15);
+        --mi-highlight-color: var(--accent);
+        --mi-cmd-highlight-bg: rgba(122, 184, 122, 0.15);
+        --mi-cmd-highlight-color: var(--green);
+        --mi-panel-bg: var(--surface-overlay);
+        --mi-panel-border: var(--border);
+        --mi-panel-shadow:
+          0 -8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 169, 110, 0.04);
+        --mi-selected-bg: rgba(201, 169, 110, 0.08);
+        --mi-scrollbar-thumb: var(--border);
+        --mi-scrollbar-thumb-hover: var(--ink-faint);
+        --mi-radius: 5px;
+        --mi-padding: 12px 14px;
+      }
+
+      /* ── Responsive ── */
+
+      @media (max-width: 640px) {
+        .shell {
+          width: 100%;
+          max-width: 100%;
+          height: 100vh;
+          border-radius: 0;
+          border: none;
+        }
+
+        .header-hint {
+          display: none;
+        }
+
+        .log-entry {
+          padding: 5px 14px;
+        }
+
+        .input-bar {
+          padding: 12px 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <div class="logo-mark"></div>
+          <div class="header-title">mention-input</div>
+          <div class="header-badge">demo</div>
+        </div>
+        <div class="header-hint">
+          <kbd>/</kbd> commands &middot; <kbd>@</kbd> mentions &middot;
+          <kbd>&crarr;</kbd> submit
+        </div>
+      </div>
+
+      <!-- Event log -->
+      <div class="log-panel">
+        <div class="log-toolbar">
+          <div class="log-toolbar-left">
+            <span class="log-label">Events</span>
+            <span class="log-count" id="count">0</span>
+          </div>
+          <button class="log-clear" id="clear-log" onclick="clearAll()">
+            Clear
+          </button>
+        </div>
+        <div class="event-log" id="log">
+          <div class="log-empty" id="empty-state">
+            <div class="log-empty-icon">~</div>
+            Type <kbd>/</kbd> for commands<br />or <kbd>@</kbd> to mention
+            someone
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <mention-input
+          id="input"
+          placeholder="Write something..."
+        ></mention-input>
+      </div>
+    </div>
+
+    <script type="module" src="../src/index.ts"></script>
+    <script>
+      const el = document.getElementById("input");
+      const logEl = document.getElementById("log");
+      const countEl = document.getElementById("count");
+      const emptyState = document.getElementById("empty-state");
+      let eventCount = 0;
+
+      // ── Commands ──
+
+      el.commands = [
+        {
+          name: "help",
+          category: "system",
+          description: "Show help information",
+          icon: "?",
+          action: "execute",
+        },
+        {
+          name: "clear",
+          category: "system",
+          description: "Clear the conversation",
+          icon: "!",
+          action: "execute",
+        },
+        {
+          name: "template",
+          category: "writing",
+          description: "Insert a writing template",
+          icon: "T",
+          action: "fill",
+          prompt: "Write about {cursor} in a formal tone.",
+        },
+        {
+          name: "summarize",
+          category: "writing",
+          description: "Summarize the text",
+          icon: "S",
+          action: "fill",
+          prompt: "Please summarize: {cursor}",
+        },
+        {
+          name: "format",
+          category: "editing",
+          description: "Text formatting options",
+          icon: "F",
+          children: [
+            {
+              name: "bold",
+              category: "editing",
+              description: "Bold text",
+              icon: "B",
+              action: "fill",
+              prompt: "**{cursor}**",
+            },
+            {
+              name: "italic",
+              category: "editing",
+              description: "Italic text",
+              icon: "I",
+              action: "fill",
+              prompt: "*{cursor}*",
+            },
+            {
+              name: "heading",
+              category: "editing",
+              description: "Heading levels",
+              icon: "H",
+              children: [
+                {
+                  name: "h1",
+                  category: "editing",
+                  description: "Heading level 1",
+                  icon: "1",
+                  action: "fill",
+                  prompt: "# {cursor}",
+                },
+                {
+                  name: "h2",
+                  category: "editing",
+                  description: "Heading level 2",
+                  icon: "2",
+                  action: "fill",
+                  prompt: "## {cursor}",
+                },
+                {
+                  name: "h3",
+                  category: "editing",
+                  description: "Heading level 3",
+                  icon: "3",
+                  action: "fill",
+                  prompt: "### {cursor}",
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      // ── Mention sources ──
+
+      el.mentionSources = {
+        items: [
+          {
+            id: "1",
+            label: "John Doe",
+            group: "Users",
+            description: "Admin",
+            icon: "J",
+          },
+          {
+            id: "2",
+            label: "Jane Smith",
+            group: "Users",
+            description: "Editor",
+            icon: "S",
+          },
+          {
+            id: "3",
+            label: "Bob Wilson",
+            group: "Users",
+            description: "Viewer",
+            icon: "B",
+          },
+          {
+            id: "4",
+            label: "Chapter 1",
+            group: "Documents",
+            description: "Introduction",
+            icon: "1",
+          },
+          {
+            id: "5",
+            label: "Chapter 2",
+            group: "Documents",
+            description: "Getting Started",
+            icon: "2",
+          },
+          {
+            id: "6",
+            label: "README",
+            group: "Documents",
+            description: "Project overview",
+            icon: "R",
+          },
+          {
+            id: "team-eng",
+            label: "Engineering",
+            group: "Teams",
+            description: "Engineering team",
+            icon: "E",
+            children: [
+              {
+                id: "eng-fe",
+                label: "Frontend",
+                description: "Frontend engineers",
+                icon: "F",
+                children: [
+                  {
+                    id: "eng-fe-alice",
+                    label: "Alice",
+                    description: "Senior FE",
+                    icon: "A",
+                  },
+                  {
+                    id: "eng-fe-bob",
+                    label: "Bob",
+                    description: "Junior FE",
+                    icon: "B",
+                  },
+                ],
+              },
+              {
+                id: "eng-be",
+                label: "Backend",
+                description: "Backend engineers",
+                icon: "K",
+                children: [
+                  {
+                    id: "eng-be-carol",
+                    label: "Carol",
+                    description: "Senior BE",
+                    icon: "C",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        groupOrder: ["Users", "Documents", "Teams"],
+      };
+
+      // ── Logging ──
+
+      function formatValue(val) {
+        if (val === null || val === undefined)
+          return '<span class="str">null</span>';
+        if (typeof val === "string") return `<span class="str">"${val}"</span>`;
+        if (typeof val === "number") return `<span class="num">${val}</span>`;
+        if (typeof val === "boolean") return val ? "true" : "false";
+        if (Array.isArray(val)) {
+          if (val.length === 0) return "[]";
+          return "[" + val.map(formatValue).join(", ") + "]";
+        }
+        if (typeof val === "object") {
+          const entries = Object.entries(val);
+          if (entries.length === 0) return "{}";
+          const parts = entries.map(
+            ([k, v]) => `<span class="key">${k}:</span> ${formatValue(v)}`,
+          );
+          return "{ " + parts.join(", ") + " }";
+        }
+        return String(val);
+      }
+
+      function addLog(eventName, detail) {
+        if (emptyState) {
+          emptyState.remove();
+        }
+
+        eventCount++;
+        countEl.textContent = eventCount;
+
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+
+        const now = new Date();
+        const ts = now.toTimeString().slice(0, 8);
+
+        const tagClass =
+          {
+            submit: "event-submit",
+            "mention-select": "event-mention",
+            "command-select": "event-command",
+            "value-change": "event-value",
+          }[eventName] || "event-value";
+
+        entry.innerHTML =
+          `<span class="log-time">${ts}</span>` +
+          `<span class="log-body"><span class="log-event-tag ${tagClass}">${eventName}</span><span class="log-detail">${formatValue(detail)}</span></span>`;
+
+        logEl.appendChild(entry);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function clearLog() {
+        eventCount = 0;
+        countEl.textContent = "0";
+        logEl.innerHTML = "";
+        const empty = document.createElement("div");
+        empty.className = "log-empty";
+        empty.id = "empty-state";
+        empty.innerHTML =
+          '<div class="log-empty-icon">~</div>Type <kbd>/</kbd> for commands<br />or <kbd>@</kbd> to mention someone';
+        logEl.appendChild(empty);
+      }
+
+      function clearAll() {
+        clearLog();
+        el.reset();
+      }
+
+      // ── Events ──
+
+      el.addEventListener("value-change", (e) => {
+        addLog("value-change", {
+          value: e.detail.value,
+          mentions: e.detail.mentions.map((m) => m.displayText),
+          commands: e.detail.commands.map((c) => c.displayText),
+        });
+      });
+
+      el.addEventListener("command-select", (e) => {
+        addLog("command-select", e.detail.command);
+        if (e.detail.command.name === "clear") {
+          clearAll();
+        }
+      });
+
+      el.addEventListener("mention-select", (e) => {
+        addLog("mention-select", {
+          label: e.detail.item.label,
+          display: `@${e.detail.item.label}`,
+        });
+      });
+
+      el.addEventListener("submit", (e) => {
+        addLog("submit", {
+          value: e.detail.value,
+          mentions: e.detail.mentions.map((m) => m.displayText),
+        });
+      });
+    </script>
+  </body>
+</html>
