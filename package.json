@@ -2,6 +2,7 @@
   "name": "mention-input",
   "version": "0.1.1",
   "description": "A framework-agnostic mention input web component built with Lit",
+  "license": "MIT",
   "type": "module",
   "main": "dist/mention-input.js",
   "module": "dist/mention-input.js",
@@ -26,7 +27,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "build:demo": "vite build --mode demo",
+    "preview": "vite preview",
+    "release": "npm version patch && npm run build && npm publish"
   },
   "dependencies": {
     "lit": "^3.2.0"

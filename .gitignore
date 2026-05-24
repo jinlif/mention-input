@@ -15,3 +15,6 @@ Thumbs.db
 
 # Playwright MCP
 .playwright-mcp/
+
+# Docs
+docs/
