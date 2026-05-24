@@ -12,6 +12,14 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jinlif/mention-input.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jinlif/mention-input/issues"
+  },
+  "homepage": "https://github.com/jinlif/mention-input#readme",
   "files": [
     "dist"
   ],

@@ -3,16 +3,13 @@
 English | [中文](./README.zh-CN.md)
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/mention-input">
-    <img src="https://img.shields.io/npm/v/mention-input?color=blue" alt="npm version" />
-  </a>
-  <a href="https://bundlephobia.com/package/mention-input">
-    <img src="https://img.shields.io/bundlephobia/minzip/mention-input" alt="bundle size" />
+  <a href="https://github.com/jinlif/mention-input/releases">
+    <img src="https://img.shields.io/npm/v/mention-input?color=blue" alt="version" />
   </a>
   <a href="https://www.npmjs.com/package/mention-input">
     <img src="https://img.shields.io/npm/dm/mention-input.svg" alt="downloads" />
   </a>
-  <a href="https://github.com/anthropics/mention-input/blob/main/LICENSE">
+  <a href="https://github.com/jinlif/mention-input/blob/main/LICENSE">
     <img src="https://img.shields.io/npm/l/mention-input" alt="license" />
   </a>
   <br />
