@@ -17,6 +17,8 @@
 
 一个框架无关、可扩展的输入组件，支持 `@` 提及和 `/` 斜杠命令。基于 [Lit](https://lit.dev/) 构建为原生 Web Component，可在 React、Vue、Svelte 或纯 HTML 中无缝使用。
 
+**[在线演示](https://jinlif.github.io/mention-input/)**
+
 <p align="center">
   <img src="./images/demo.png" alt="mention-input 演示" width="600" />
 </p>

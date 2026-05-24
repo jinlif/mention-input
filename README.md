@@ -17,6 +17,8 @@ English | [中文](./README.zh-CN.md)
 
 A framework-agnostic, extensible input component with `@` mentions and `/` slash commands. Built as a native Web Component with [Lit](https://lit.dev/), it works seamlessly in React, Vue, Svelte, or plain HTML.
 
+**[Live Demo](https://jinlif.github.io/mention-input/)**
+
 <p align="center">
   <img src="./images/demo.png" alt="mention-input demo" width="600" />
 </p>
