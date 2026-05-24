@@ -1,19 +1,32 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
-export default defineConfig({
-  root: ".",
-  server: {
-    open: "/demo/index.html",
-  },
-  build: {
-    lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      formats: ["es"],
-      fileName: "mention-input",
+export default defineConfig(({ mode }) => {
+  if (mode === "demo") {
+    return {
+      root: "demo",
+      base: "./",
+      build: {
+        outDir: "../dist-demo",
+        emptyOutDir: true,
+      },
+    };
+  }
+
+  return {
+    root: ".",
+    server: {
+      open: "/demo/index.html",
     },
-    rollupOptions: {
-      external: /^lit/,
+    build: {
+      lib: {
+        entry: resolve(__dirname, "src/index.ts"),
+        formats: ["es"],
+        fileName: "mention-input",
+      },
+      rollupOptions: {
+        external: /^lit/,
+      },
     },
-  },
+  };
 });
