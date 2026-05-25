@@ -14,7 +14,7 @@ export interface MentionDetection {
  * Matches: start-of-line or whitespace, followed by `/`, then optional word chars or hyphens.
  */
 export function detectCommand(text: string): CommandDetection {
-  const match = text.match(/(^|\s)\/([\w-]*)$/);
+  const match = text.match(/(^|\s)\/([^\s]*)$/);
   if (match) {
     return { active: true, query: match[2] };
   }

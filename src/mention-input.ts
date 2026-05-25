@@ -202,15 +202,16 @@ export class MentionInput extends LitElement {
     }
 
     // Clean up mentions whose displayText is no longer in the value
-    // Use word boundary to avoid false positives (e.g. @John vs @Johnny)
+    // Use negative lookahead to avoid false positives (e.g. @John vs @Johnny)
+    // Note: \b doesn't work with CJK characters, so we use (?!\w) instead
     this._selectedMentions = this._selectedMentions.filter((m) => {
-      const pattern = new RegExp(this._escapeRegExp(m.displayText) + '\\b');
+      const pattern = new RegExp(this._escapeRegExp(m.displayText) + '(?!\\w)');
       return pattern.test(this.value);
     });
 
     // Clean up commands whose displayText is no longer in the value
     this._selectedCommands = this._selectedCommands.filter((c) => {
-      const pattern = new RegExp(this._escapeRegExp(c.displayText) + '\\b');
+      const pattern = new RegExp(this._escapeRegExp(c.displayText) + '(?!\\w)');
       return pattern.test(this.value);
     });
 
@@ -246,7 +247,7 @@ export class MentionInput extends LitElement {
     this._commandActive = false;
 
     // Find the actual command trigger position using the same regex as detectCommand
-    const cmdMatch = this.value.match(/(^|\s)\/([\w-]*)$/);
+    const cmdMatch = this.value.match(/(^|\s)\/([^\s]*)$/);
     const slashPos = cmdMatch ? cmdMatch.index! + cmdMatch[1].length : -1;
 
     if (command.action === 'execute') {
