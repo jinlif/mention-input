@@ -99,7 +99,7 @@ npm install mention-input
 ### React
 
 ```tsx
-import { useEffect, useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import 'mention-input';
 
 // 自定义元素类型声明
@@ -110,6 +110,8 @@ declare global {
         placeholder?: string;
         disabled?: boolean;
         value?: string;
+        mentionSources?: MentionSource;
+        commands?: Command[];
       };
     }
   }
@@ -118,32 +120,33 @@ declare global {
 export function ChatInput() {
   const ref = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+  const mentionSources: MentionSource = {
+    items: [
+      { id: '1', label: '张三', group: '用户', icon: '张' },
+      { id: '2', label: '李四', group: '用户', icon: '李' },
+    ],
+    groupOrder: ['用户'],
+  };
 
-    el.mentionSources = {
-      items: [
-        { id: '1', label: '张三', group: '用户', icon: '张' },
-        { id: '2', label: '李四', group: '用户', icon: '李' },
-      ],
-      groupOrder: ['用户'],
-    };
+  const commands: Command[] = [
+    { name: 'clear', category: 'system', description: '清空对话', action: 'execute' },
+  ];
 
-    el.commands = [
-      { name: 'clear', category: 'system', description: '清空对话', action: 'execute' },
-    ];
-
-    const onSubmit = (e: CustomEvent) => {
-      console.log(e.detail.value, e.detail.mentions);
-      (el as any).reset();
-    };
-
-    el.addEventListener('submit', onSubmit);
-    return () => el.removeEventListener('submit', onSubmit);
+  const onSubmit = useCallback((e: CustomEvent) => {
+    console.log(e.detail.value, e.detail.mentions);
+    (ref.current as any)?.reset();
   }, []);
 
-  return <mention-input ref={ref as any} placeholder="输入消息..." />;
+  return (
+    <mention-input
+      ref={ref}
+      placeholder="输入消息..."
+      mentionSources={mentionSources}
+      commands={commands}
+      // @ts-expect-error — 自定义元素事件
+      onSubmit={onSubmit}
+    />
+  );
 }
 ```
 
@@ -154,32 +157,29 @@ export function ChatInput() {
   <mention-input
     ref="inputRef"
     placeholder="输入消息..."
+    :mentionSources.prop="mentionSources"
+    :commands.prop="commands"
     @submit="onSubmit"
   />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import 'mention-input';
 
 const inputRef = ref(null);
 
-onMounted(() => {
-  const el = inputRef.value;
-  if (!el) return;
+const mentionSources = {
+  items: [
+    { id: '1', label: '张三', group: '用户', icon: '张' },
+    { id: '2', label: '李四', group: '用户', icon: '李' },
+  ],
+  groupOrder: ['用户'],
+};
 
-  el.mentionSources = {
-    items: [
-      { id: '1', label: '张三', group: '用户', icon: '张' },
-      { id: '2', label: '李四', group: '用户', icon: '李' },
-    ],
-    groupOrder: ['用户'],
-  };
-
-  el.commands = [
-    { name: 'help', category: 'system', description: '显示帮助', action: 'execute' },
-  ];
-});
+const commands = [
+  { name: 'help', category: 'system', description: '显示帮助', action: 'execute' },
+];
 
 function onSubmit(e) {
   console.log(e.detail.value, e.detail.mentions);

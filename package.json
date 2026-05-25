@@ -21,6 +21,18 @@
     "url": "https://github.com/jinlif/mention-input/issues"
   },
   "homepage": "https://github.com/jinlif/mention-input#readme",
+  "keywords": [
+    "mention",
+    "input",
+    "autocomplete",
+    "tag",
+    "at-mention",
+    "user-mention",
+    "web-component",
+    "custom-element",
+    "lit",
+    "framework-agnostic"
+  ],
   "files": [
     "dist"
   ],

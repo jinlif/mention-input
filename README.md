@@ -97,7 +97,7 @@ npm install mention-input
 ### React
 
 ```tsx
-import { useEffect, useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import 'mention-input';
 
 // Type declaration for the custom element
@@ -108,6 +108,8 @@ declare global {
         placeholder?: string;
         disabled?: boolean;
         value?: string;
+        mentionSources?: MentionSource;
+        commands?: Command[];
       };
     }
   }
@@ -116,32 +118,33 @@ declare global {
 export function ChatInput() {
   const ref = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+  const mentionSources: MentionSource = {
+    items: [
+      { id: '1', label: 'John Doe', group: 'Users', icon: 'J' },
+      { id: '2', label: 'Jane Smith', group: 'Users', icon: 'S' },
+    ],
+    groupOrder: ['Users'],
+  };
 
-    el.mentionSources = {
-      items: [
-        { id: '1', label: 'John Doe', group: 'Users', icon: 'J' },
-        { id: '2', label: 'Jane Smith', group: 'Users', icon: 'S' },
-      ],
-      groupOrder: ['Users'],
-    };
+  const commands: Command[] = [
+    { name: 'clear', category: 'system', description: 'Clear conversation', action: 'execute' },
+  ];
 
-    el.commands = [
-      { name: 'clear', category: 'system', description: 'Clear conversation', action: 'execute' },
-    ];
-
-    const onSubmit = (e: CustomEvent) => {
-      console.log(e.detail.value, e.detail.mentions);
-      (el as any).reset();
-    };
-
-    el.addEventListener('submit', onSubmit);
-    return () => el.removeEventListener('submit', onSubmit);
+  const onSubmit = useCallback((e: CustomEvent) => {
+    console.log(e.detail.value, e.detail.mentions);
+    (ref.current as any)?.reset();
   }, []);
 
-  return <mention-input ref={ref as any} placeholder="Type a message..." />;
+  return (
+    <mention-input
+      ref={ref}
+      placeholder="Type a message..."
+      mentionSources={mentionSources}
+      commands={commands}
+      // @ts-expect-error — custom element event
+      onSubmit={onSubmit}
+    />
+  );
 }
 ```
 
@@ -152,32 +155,29 @@ export function ChatInput() {
   <mention-input
     ref="inputRef"
     placeholder="Type a message..."
+    :mentionSources.prop="mentionSources"
+    :commands.prop="commands"
     @submit="onSubmit"
   />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import 'mention-input';
 
 const inputRef = ref(null);
 
-onMounted(() => {
-  const el = inputRef.value;
-  if (!el) return;
+const mentionSources = {
+  items: [
+    { id: '1', label: 'Alice', group: 'Users', icon: 'A' },
+    { id: '2', label: 'Bob', group: 'Users', icon: 'B' },
+  ],
+  groupOrder: ['Users'],
+};
 
-  el.mentionSources = {
-    items: [
-      { id: '1', label: 'Alice', group: 'Users', icon: 'A' },
-      { id: '2', label: 'Bob', group: 'Users', icon: 'B' },
-    ],
-    groupOrder: ['Users'],
-  };
-
-  el.commands = [
-    { name: 'help', category: 'system', description: 'Show help', action: 'execute' },
-  ];
-});
+const commands = [
+  { name: 'help', category: 'system', description: 'Show help', action: 'execute' },
+];
 
 function onSubmit(e) {
   console.log(e.detail.value, e.detail.mentions);
