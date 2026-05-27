@@ -33,7 +33,7 @@
 - **命令动作** — 三种内置动作类型：`execute`（直接执行）、`fill`（插入模板，`{cursor}` 标记光标位置）、`modal`（通知宿主应用打开弹窗）
 - **自动调整高度** — 文本域随内容从 `minRows` 增长到 `maxRows`
 - **高亮层** — 已选中的 @提及 和 /命令 在输入时以不同颜色内联高亮
-- **丰富的事件系统** — `submit`、`value-change`、`mention-select`、`command-select` 事件，携带结构化的 detail 对象
+- **丰富的事件系统** — `submit`、`valuechange`、`mentionselect`、`commandselect` 事件，携带结构化的 detail 对象
 - **完整的 CSS 自定义** — 20+ CSS 自定义属性，覆盖颜色、字体、间距、阴影等
 - **键盘驱动** — 方向键导航建议列表，Enter 选中，Escape 关闭，Shift+Enter 换行
 - **零框架锁定** — 原生 Web Component，浏览器能运行的地方就能用
@@ -230,9 +230,9 @@ interface Command {
 | 事件 | Detail | 说明 |
 |---|---|---|
 | `submit` | `{ value, mentions, commands }` | 按下 Enter（非 Shift+Enter）时触发，包含完整文本和所有已选中的提及/命令 |
-| `value-change` | `{ value, mentions, commands }` | 每次输入变化时触发，当提及/命令文本被删除时自动清理对应项 |
-| `mention-select` | `{ item }` | 从建议面板选中一个提及时触发 |
-| `command-select` | `{ command }` | 从建议面板选中一个命令时触发 |
+| `valuechange` | `{ value, mentions, commands }` | 每次输入变化时触发，当提及/命令文本被删除时自动清理对应项 |
+| `mentionselect` | `{ item }` | 从建议面板选中一个提及时触发 |
+| `commandselect` | `{ command }` | 从建议面板选中一个命令时触发 |
 | `reset` | — | 调用 `reset()` 时触发 |
 
 ## 公共 API

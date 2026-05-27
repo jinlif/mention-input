@@ -207,7 +207,7 @@ export class MentionSuggestions extends LitElement {
 
   private _dispatchSelect(item: MentionItem) {
     this.dispatchEvent(
-      new CustomEvent('mention-select', {
+      new CustomEvent('mentionselect', {
         detail: { item },
         bubbles: true,
         composed: true,

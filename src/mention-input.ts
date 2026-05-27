@@ -366,7 +366,7 @@ export class MentionInput extends LitElement {
 
   private _dispatchValueChange() {
     this.dispatchEvent(
-      new CustomEvent('value-change', {
+      new CustomEvent('valuechange', {
         detail: {
           value: this.value,
           mentions: [...this._selectedMentions],
@@ -439,7 +439,7 @@ export class MentionInput extends LitElement {
           .commands=${this.commands}
           .query=${this._commandQuery}
           .visible=${this._commandActive}
-          @command-select=${this._handleCommandSelect}
+          @commandselect=${this._handleCommandSelect}
           @clear-query=${this._handleCommandClearQuery}
           @close=${this._handleCommandClose}
         ></mi-command-suggestions>
@@ -450,7 +450,7 @@ export class MentionInput extends LitElement {
           .visible=${this._mentionActive}
           .groupOrder=${this.mentionSources.groupOrder ?? []}
           .customFilter=${this.mentionSources.filter ?? undefined}
-          @mention-select=${this._handleMentionSelect}
+          @mentionselect=${this._handleMentionSelect}
           @clear-query=${this._handleMentionClearQuery}
           @close=${this._handleMentionClose}
         ></mi-mention-suggestions>

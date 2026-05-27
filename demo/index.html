@@ -693,9 +693,9 @@
         const tagClass =
           {
             submit: "event-submit",
-            "mention-select": "event-mention",
-            "command-select": "event-command",
-            "value-change": "event-value",
+            mentionselect: "event-mention",
+            commandselect: "event-command",
+            valuechange: "event-value",
           }[eventName] || "event-value";
 
         entry.innerHTML =
@@ -725,23 +725,23 @@
 
       // ── Events ──
 
-      el.addEventListener("value-change", (e) => {
-        addLog("value-change", {
+      el.addEventListener("valuechange", (e) => {
+        addLog("valuechange", {
           value: e.detail.value,
           mentions: e.detail.mentions.map((m) => m.displayText),
           commands: e.detail.commands.map((c) => c.displayText),
         });
       });
 
-      el.addEventListener("command-select", (e) => {
-        addLog("command-select", e.detail.command);
+      el.addEventListener("commandselect", (e) => {
+        addLog("commandselect", e.detail.command);
         if (e.detail.command.name === "clear") {
           clearAll();
         }
       });
 
-      el.addEventListener("mention-select", (e) => {
-        addLog("mention-select", {
+      el.addEventListener("mentionselect", (e) => {
+        addLog("mentionselect", {
           label: e.detail.item.label,
           display: `@${e.detail.item.label}`,
         });

@@ -31,7 +31,7 @@ A framework-agnostic, extensible input component with `@` mentions and `/` slash
 - **Command Actions** — three built-in action types: `execute` (fire and forget), `fill` (insert a template with `{cursor}` caret placement), `modal` (notify host app to open a dialog)
 - **Auto-resize Textarea** — grows from `minRows` to `maxRows` as content increases
 - **Highlight Layer** — selected @mentions and /commands are visually highlighted inline as you type
-- **Rich Event System** — `submit`, `value-change`, `mention-select`, `command-select` events with structured detail objects
+- **Rich Event System** — `submit`, `valuechange`, `mentionselect`, `commandselect` events with structured detail objects
 - **Full CSS Customization** — 20+ CSS custom properties for colors, fonts, spacing, shadows, and more
 - **Keyboard Driven** — arrow keys navigate suggestions, Enter selects, Escape dismisses, Shift+Enter for newline
 - **Zero Framework Lock-in** — native Web Component; works everywhere the browser runs
@@ -228,9 +228,9 @@ interface Command {
 | Event | Detail | Description |
 |---|---|---|
 | `submit` | `{ value, mentions, commands }` | Fired on Enter (without Shift). Includes the full text and all selected mentions/commands. |
-| `value-change` | `{ value, mentions, commands }` | Fired on every input change. Mentions/commands are auto-cleaned when their text is deleted. |
-| `mention-select` | `{ item }` | Fired when a mention is selected from the suggestion panel. |
-| `command-select` | `{ command }` | Fired when a command is selected from the suggestion panel. |
+| `valuechange` | `{ value, mentions, commands }` | Fired on every input change. Mentions/commands are auto-cleaned when their text is deleted. |
+| `mentionselect` | `{ item }` | Fired when a mention is selected from the suggestion panel. |
+| `commandselect` | `{ command }` | Fired when a command is selected from the suggestion panel. |
 | `reset` | — | Fired when `reset()` is called. |
 
 ## Public API

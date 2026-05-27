@@ -176,7 +176,7 @@ export class CommandSuggestions extends LitElement {
 
   private _dispatchSelect(cmd: Command) {
     this.dispatchEvent(
-      new CustomEvent('command-select', {
+      new CustomEvent('commandselect', {
         detail: { command: cmd },
         bubbles: true,
         composed: true,
