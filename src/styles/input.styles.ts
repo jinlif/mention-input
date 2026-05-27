@@ -117,6 +117,7 @@ export const inputStyles = css`
     color: var(--mi-text, #e0e0e0);
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
+    scrollbar-gutter: stable;
   }
 
   .input-wrapper .highlight-layer::-webkit-scrollbar {
