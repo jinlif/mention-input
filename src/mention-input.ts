@@ -60,6 +60,9 @@ export class MentionInput extends LitElement {
   private _mentionStartPos = 0;
 
   @state()
+  private _commandStartPos = 0;
+
+  @state()
   private _selectedMentions: SelectedMention[] = [];
 
   @state()
@@ -182,15 +185,18 @@ export class MentionInput extends LitElement {
     if (!ta) return;
 
     this.value = ta.value;
+    const cursorPos = ta.selectionStart;
 
     // Detect slash command
-    const cmd = detectCommand(this.value);
+    const cmd = detectCommand(this.value, cursorPos);
     this._commandActive = cmd.active;
     this._commandQuery = cmd.query;
+    if (cmd.active) {
+      this._commandStartPos = cmd.startPos;
+    }
 
     // Detect mention (only when command panel is not active)
     if (!this._commandActive) {
-      const cursorPos = ta.selectionStart;
       const mention = detectMention(this.value, cursorPos);
       this._mentionActive = mention.active;
       if (!this._mentionPanel?.suppressQueryReset) {
@@ -246,14 +252,23 @@ export class MentionInput extends LitElement {
     const { command } = e.detail;
     this._commandActive = false;
 
-    // Find the actual command trigger position using the same regex as detectCommand
-    const cmdMatch = this.value.match(/(^|\s)\/([^\s]*)$/);
-    const slashPos = cmdMatch ? cmdMatch.index! + cmdMatch[1].length : -1;
+    // The commandStartPos points to the space (or / if at line start).
+    // Check if the character AT startPos is whitespace to preserve it.
+    const hasLeadingSpace =
+      this._commandStartPos < this.value.length &&
+      /\s/.test(this.value[this._commandStartPos]);
+
+    // Keep the leading space, start the replacement from the / character
+    const cmdTextStart = hasLeadingSpace
+      ? this._commandStartPos + 1
+      : this._commandStartPos;
+
+    const cursorPos = this._textarea.selectionStart;
 
     if (command.action === 'execute') {
-      if (slashPos !== -1) {
-        const before = this.value.substring(0, slashPos);
-        const after = this.value.substring(this._textarea.selectionStart);
+      if (cmdTextStart !== -1) {
+        const before = this.value.substring(0, cmdTextStart);
+        const after = this.value.substring(cursorPos);
         this.value = (before + after).replace(/^ +$/, '');
         this._textarea.value = this.value;
       }
@@ -264,10 +279,10 @@ export class MentionInput extends LitElement {
 
     // Keep the /command text in the input and track it for highlighting
     const displayText = `/${command.name}`;
-    if (slashPos !== -1) {
+    if (cmdTextStart !== -1) {
       // Replace /query with /commandName (complete the command name)
-      const before = this.value.substring(0, slashPos);
-      const after = this.value.substring(this._textarea.selectionStart);
+      const before = this.value.substring(0, cmdTextStart);
+      const after = this.value.substring(cursorPos);
       const needsSpace = after.length === 0 || (after[0] !== ' ' && after[0] !== '\n');
       this.value = before + displayText + (needsSpace ? ' ' : '') + after;
       this._textarea.value = this.value;
@@ -275,7 +290,7 @@ export class MentionInput extends LitElement {
       const newCmd: SelectedCommand = {
         command,
         displayText,
-        startIndex: slashPos,
+        startIndex: cmdTextStart,
       };
       this._selectedCommands = [
         ...this._selectedCommands.filter((c) => c.displayText !== displayText),

@@ -1,6 +1,6 @@
 {
   "name": "mention-input",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A framework-agnostic mention input web component built with Lit",
   "license": "MIT",
   "type": "module",

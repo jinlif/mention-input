@@ -1,6 +1,7 @@
 export interface CommandDetection {
   active: boolean;
   query: string;
+  startPos: number;
 }
 
 export interface MentionDetection {
@@ -10,15 +11,18 @@ export interface MentionDetection {
 }
 
 /**
- * Detect a `/command` at the end of the text.
- * Matches: start-of-line or whitespace, followed by `/`, then optional word chars or hyphens.
+ * Detect a `/command` before the cursor position.
+ * Matches: start-of-line or whitespace, followed by `/`, then optional non-whitespace chars.
  */
-export function detectCommand(text: string): CommandDetection {
-  const match = text.match(/(^|\s)\/([^\s]*)$/);
+export function detectCommand(text: string, cursorPos: number): CommandDetection {
+  const beforeCursor = text.substring(0, cursorPos);
+  const match = beforeCursor.match(/(^|\s)\/([^\s]*)$/);
   if (match) {
-    return { active: true, query: match[2] };
+    const fullMatch = match[0];
+    const startPos = cursorPos - fullMatch.length;
+    return { active: true, query: match[2], startPos };
   }
-  return { active: false, query: '' };
+  return { active: false, query: '', startPos: 0 };
 }
 
 /**
